@@ -136,12 +136,12 @@ contract BrixbyCrowdsale is Pausable {
         FundTransfer(beneficiary, amountRaised, false);
     }
 
-    function addTokenToWallet(address _address, uint256 _value, bool _isPercent) onlyOwner payable {
+    function transferTokenToWallet(address _address, uint256 _value, bool _isPercent) onlyOwner payable {
         require(_value > 0);
         transferToken(_address, _value, _isPercent);
     }
 
-    function addTokenToWalletList(address[] _addresses, uint256 _value, bool _isPercent) onlyOwner {
+    function transferTokenToWalletList(address[] _addresses, uint256 _value, bool _isPercent) onlyOwner {
         require(_value > 0);
         for (uint i = 0; i < _addresses.length; i++) {
             transferToken(_addresses[i], _value, _isPercent);
