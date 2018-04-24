@@ -15,6 +15,8 @@ contract BrixbyCrowdsale is Pausable {
     uint public startTime;
     uint public deadline;
     uint public price;
+    uint public priceUsd;
+    uint public exchangeRate;
     token public tokenReward;
     mapping(address => uint256) public balanceOf;
     bool public crowdsaleClosed = true;
@@ -32,10 +34,10 @@ contract BrixbyCrowdsale is Pausable {
     *
     * Setup the owner
     */
-    function BrixbyCrowdsale(address ifSuccessfulSendTo, uint deadlineTime, uint szaboCostOfEachToken, address addressOfTokenUsedAsReward) {
+    function BrixbyCrowdsale(address ifSuccessfulSendTo, uint deadlineTime, uint usdCostOfEachToken, address addressOfTokenUsedAsReward) {
         beneficiary = ifSuccessfulSendTo;
         deadline = deadlineTime;
-        price = szaboCostOfEachToken * 1 szabo;
+        setPriceUsd(usdCostOfEachToken);
         tokenReward = token(addressOfTokenUsedAsReward);
         pause();
     }
@@ -89,21 +91,53 @@ contract BrixbyCrowdsale is Pausable {
         {
             tokenAmount = tokenAmount + (tokenAmount * 60 / 100);
         }
+
         //discount by days
         else if (now < startTime + 1 days)
         {
-            tokenAmount = tokenAmount + (tokenAmount * 50 / 100);
+            tokenAmount = tokenAmount + (tokenAmount * 40 / 100);
         }
         else if ((now >= startTime + 1 days) && (now < startTime + 2 days))
         {
-            tokenAmount = tokenAmount + (tokenAmount * 45 / 100);
+            tokenAmount = tokenAmount + (tokenAmount * 35 / 100);
         }
         else if ((now >= startTime + 2 days) && (now < startTime + 3 days))
         {
-            tokenAmount = tokenAmount + (tokenAmount * 43 / 100);
+            tokenAmount = tokenAmount + (tokenAmount * 30 / 100);
+        }
+        else if ((now >= startTime + 3 days) && (now < startTime + 4 days))
+        {
+            tokenAmount = tokenAmount + (tokenAmount * 25 / 100);
+        }
+        else if ((now >= startTime + 4 days) && (now < startTime + 5 days))
+        {
+            tokenAmount = tokenAmount + (tokenAmount * 20 / 100);
         }
 
         return tokenAmount;
+    }
+
+    /**
+    * Setting usd-eth exchange rate (how much is one ether in dollars)
+    */
+    function setExchangeRate(uint _rateInUsd) whenNotPaused onlyOwner public {
+        exchangeRate = _rateInUsd;
+        updatePrice();
+    }
+
+    /**
+    * Update price for 1 token in ether
+    */
+    function updatePrice() internal {
+        price = (priceUsd / exchangeRate) * 1 ether;
+    }
+
+    /**
+    * Setting price for 1 token in usd
+    */
+    function setPriceUsd(uint _price) whenNotPaused onlyOwner public {
+        priceUsd = _price;
+        updatePrice();
     }
 
     /**
