@@ -26,7 +26,7 @@ contract BrixbyToken is Pausable {
     event Approval(address indexed _owner, address indexed _spender, uint _value);
 
     /**
-    * Constrctor function
+    * Constructor function
     *
     * Initializes contract with initial supply tokens to the creator of the contract
     */

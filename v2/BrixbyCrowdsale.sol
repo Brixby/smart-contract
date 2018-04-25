@@ -1,11 +1,10 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.21;
 
 import 'github.com/Brixby/smart-contract/v2/Pausable.sol';
 
 interface token {
-    function transfer(address receiver, uint amount);
-
-    function balanceOf(address _owner) constant returns (uint256 balance);
+    function transfer(address receiver, uint amount) external;
+    function balanceOf(address _owner) external view returns (uint256 balance);
 }
 
 contract BrixbyCrowdsale is Pausable {
@@ -15,8 +14,8 @@ contract BrixbyCrowdsale is Pausable {
     uint public startTime;
     uint public deadline;
     uint public price;
-    uint public priceUsd;
-    uint public exchangeRate;
+    uint public priceUsd;   //price in cents
+    uint public exchangeRate;   //how much is one ether in cents
     token public tokenReward;
     mapping(address => uint256) public balanceOf;
     bool public crowdsaleClosed = true;
@@ -30,15 +29,16 @@ contract BrixbyCrowdsale is Pausable {
     }
 
     /**
-    * Constrctor function
+    * Constructor function
     *
     * Setup the owner
     */
-    function BrixbyCrowdsale(address ifSuccessfulSendTo, uint deadlineTime, uint usdCostOfEachToken, address addressOfTokenUsedAsReward) {
-        beneficiary = ifSuccessfulSendTo;
-        deadline = deadlineTime;
-        setPriceUsd(usdCostOfEachToken);
-        tokenReward = token(addressOfTokenUsedAsReward);
+    function BrixbyCrowdsale(address _beneficiary, uint _deadline, uint _tokenPriceUsd, uint _exchangeRate, address _tokenContract) {
+        beneficiary = _beneficiary;
+        deadline = _deadline;
+        exchangeRate = _exchangeRate;
+        setPriceUsd(_tokenPriceUsd);
+        tokenReward = token(_tokenContract);
         pause();
     }
 
@@ -118,9 +118,9 @@ contract BrixbyCrowdsale is Pausable {
     }
 
     /**
-    * Setting usd-eth exchange rate (how much is one ether in dollars)
+    * Setting usd-eth exchange rate (how much is one ether in cents)
     */
-    function setExchangeRate(uint _rateInUsd) whenNotPaused onlyOwner public {
+    function setExchangeRate(uint _rateInUsd) onlyOwner public {
         exchangeRate = _rateInUsd;
         updatePrice();
     }
@@ -128,14 +128,14 @@ contract BrixbyCrowdsale is Pausable {
     /**
     * Update price for 1 token in ether
     */
-    function updatePrice() internal {
-        price = (priceUsd / exchangeRate) * 1 ether;
+    function updatePrice() view internal {
+        price = (priceUsd * 1 ether)/ exchangeRate;
     }
 
     /**
-    * Setting price for 1 token in usd
+    * Setting price for 1 token in usd cents
     */
-    function setPriceUsd(uint _price) whenNotPaused onlyOwner public {
+    function setPriceUsd(uint _price) onlyOwner public {
         priceUsd = _price;
         updatePrice();
     }
